@@ -76,7 +76,7 @@ const ifHasAuthCookies = (req, user) => {
                     if (fs.existsSync(deleteFile)) {
                         fs.unlink(deleteFile, (err) => {
                             if (err) {
-                                res.writeHead(400);
+                                res.writeHead(500);
                                 res.end('Did not unlink file' + err);
                                 console.log(err);
                             }
@@ -86,7 +86,7 @@ const ifHasAuthCookies = (req, user) => {
                         })
                     }
                     else {
-                        res.writeHead(400);
+                        res.writeHead(500);
                         res.end('No such file' + deleteFile);
                         console.log('No such file' + deleteFile);
                     }
@@ -106,17 +106,15 @@ const ifHasAuthCookies = (req, user) => {
 
     else if (req.url === '/post') {
         if (req.method === 'POST') {
-            res.writeHead(200);
-
-
             
-            
-            let string = '';
-            let filename = '';
-            let content = '';
 
             if (ifHasAuthCookies(req, user)) {
-                
+                res.writeHead(200);
+            
+            
+                let string = '';
+                let filename = '';
+                let content = '';
 
                 req.on('data', chunk => {
                     string = chunk.toString();
@@ -152,10 +150,15 @@ const ifHasAuthCookies = (req, user) => {
 
                 });
 
+                
+
+            } else {
+                res.writeHead(403);
+                res.end('Пользователь не авторизован');
             }
 
 
-            res.end('success post');
+            
         } else {
             res.writeHead(405);
             res.end('HTTP method not allowed for /post');
@@ -231,7 +234,12 @@ const ifHasAuthCookies = (req, user) => {
                         'Content-Type': 'text/plain',
                         'Set-Cookie': `userId=${user.id};MAX_AGE=172800;path=/;authorized=true;MAX_AGE=172800;path=/;`
                     })
+                } else {
+                    res.writeHead(400);
+                    res.end('Неверный логин / пароль');
                 } 
+
+                
                 
 
 
