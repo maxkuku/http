@@ -123,38 +123,46 @@ const ifHasAuthCookies = (req, user) => {
                     const searchParams = new URLSearchParams(string);
                     for (const [key, value] of searchParams.entries()) {
 
-                        // console.log(`${key} ${value}`)
-
-                        if(key === 'filename')
+                        
+                        if(key === 'filename') {
+                            
                             filename = value;
+                        } 
                         
                         if(key === 'content')
                             content = value;
                     }
 
-                    // console.log(`filename: ${filename}, content: ${content}`)
-
-                    fs.writeFile( `./files/${filename}`, content, (err) => {
-                        if (err) {
-                            res.writeHead(404);
-                            console.log(err);
-                            res.end('File write error' + err);  
-                            
-                        }
-                        else {
-                            console.log("File written successfully\n");
-                            console.log("The written has the following contents:");
-                            console.log(fs.readFileSync(`./files/${filename}`, "utf8"));
-                        } 
-                    });
+                    if(filename) {
+                        fs.writeFile( `./files/${filename}`, content, (err) => {
+                            if (err) {
+                                res.writeHead(404);
+                                console.log(err);
+                                res.end('File write error' + err);  
+                                
+                            }
+                            else {
+                                console.log("File written successfully\n");
+                                console.log("The written has the following contents:");
+                                console.log(fs.readFileSync(`./files/${filename}`, "utf8"));
+                                res.end(`Файл ./files/${filename} записан`);  
+                            } 
+                        });
+                    }
+                    else {                           
+                        res.writeHead(400);
+                        res.end('Не указано имя фала');
+                    }
 
                 });
 
                 
 
-            } else {
-                res.writeHead(403);
-                res.end('Пользователь не авторизован');
+            } 
+            
+            else {
+                res.writeHead(200);
+                res.end();
             }
 
 
@@ -232,10 +240,14 @@ const ifHasAuthCookies = (req, user) => {
                 if(userTrue && userPassTrue){
                     res.writeHead(200, {
                         'Content-Type': 'text/plain',
-                        'Set-Cookie': `userId=${user.id};MAX_AGE=172800;path=/;authorized=true;MAX_AGE=172800;path=/;`
+                        'Set-Cookie': [`userId=${user.id};MAX_AGE=172800;path=/;`,`authorized=true;MAX_AGE=172800;path=/;`]
                     })
                 } else {
-                    res.writeHead(400);
+                    res.writeHead(200, {
+                        'Content-Type': 'text/plain',
+                        'Set-Cookie': [`userId=${user.id};expires=${new Date(0).toUTCString()};`, `authorized=false;expires=${new Date(0).toUTCString()}`]
+                    });
+                    //res.writeHead(400);
                     res.end('Неверный логин / пароль');
                 } 
 
